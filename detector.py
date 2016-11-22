@@ -38,8 +38,8 @@ if __name__ == "__main__":
 		for article in page:
 			if any(key in str(article) for key in KEYWORDS):
 				alerts += str(article)
-		
-		if len(alerts > 0):		
+		print alerts
+		if len(alerts) > 0:		
 			send_alert(alerts)
 
 	except Exception as ex:
