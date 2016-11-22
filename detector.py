@@ -15,7 +15,7 @@ def send_alert(msg_body):
    BODY = msg_body
    
    message = MIMEMultipart('alternative')
-   message['Subject'] = '!ALERT! ' + time.strftime("%d/%m/%Y %H:%M:%S")
+   message['Subject'] = 'EARTHQUAKE/TSUNAMI ALERT! ' + time.strftime("%m/%d/%Y %H:%M:%S")
 
    message.attach(MIMEText(msg_body, 'html'))
 
@@ -40,23 +40,12 @@ if __name__ == "__main__":
 		page.raise_for_status()
 		page = bs4.BeautifulSoup(page.text, "lxml")
 		page = page.select('.esc-lead-article-title')
-		# print(page)
-		# alerts = ""
-
-		# abc = open('new.html','w')
-
-		# for i in page:
-		# 	abc.write(str(i))
-		# abc.close()
-
-		# q = open('other.html', 'w')
+		
+		alerts = ""
 
 		for article in page:
 			if any(key in str(article) for key in KEYWORDS):
-				print str(alerts)
 				alerts += str(article)
-				# q.write(str(article))
-		# q.close()
 
 		if len(alerts) > 0:		
 			send_alert(alerts)
