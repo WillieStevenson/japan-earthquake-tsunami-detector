@@ -12,18 +12,26 @@
 def send_alert(msg_body):
 
    RECIPIENTS = ['email@domain.com']
-   SUBJECT = '!ALERT! ' + time.strftime("%d/%m/%Y %H:%M:%S")
    BODY = msg_body
-   	 
-   message = 'Subject: %s\n\n%s' % (SUBJECT, BODY)
+   
+   message = MIMEMultipart('alternative')
+   message['Subject'] = '!ALERT! ' + time.strftime("%d/%m/%Y %H:%M:%S")
+
+   message.attach(MIMEText(msg_body, 'html'))
 
    s = smtplib.SMTP('localhost')
-   s.sendmail('localhost', RECIPIENTS, message)
+   s.sendmail('localhost', RECIPIENTS, message.as_string())
    s.quit()
 
 if __name__ == "__main__":
 
-	import requests, bs4
+	import requests
+	import bs4
+	import smtplib
+	import time
+
+	from email.mime.multipart import MIMEMultipart
+	from email.mime.text import MIMEText
 
 	KEYWORDS = ["震災","地震","津波","震度"] # Earthquake disaster, earthquake, tsunami, seismic activity
 
@@ -38,7 +46,7 @@ if __name__ == "__main__":
 		for article in page:
 			if any(key in str(article) for key in KEYWORDS):
 				alerts += str(article)
-		print alerts
+
 		if len(alerts) > 0:		
 			send_alert(alerts)
 
