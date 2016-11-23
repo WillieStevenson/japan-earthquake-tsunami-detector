@@ -35,20 +35,43 @@ if __name__ == "__main__":
 
 	KEYWORDS = ["震災","地震","津波","震度"] # Earthquake disaster, earthquake, tsunami, seismic activity
 
-	page = requests.get('https://news.google.co.jp/news')
+	styles = "<style>body,html{font-size:small;font-family: 'Noto Sans', 'Noto Sans CJK JP', sans-serif;width:550px;}.container{border-radius:2px;box-shadow:0px 1px 4px 0px rgba(0,0,0,0.2)}._xYj{background:#f44336;padding:18px 24px 18px 24px}._fWj{color:#fff;font-size:24px;line-height:32px}._K3j{color:rgba(255,255,255,.7);font-size:15px;line-height:24px}</style>"
+	headers = {'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8', 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36'}
+	page = requests.get('https://www.google.com/search?q=japan+earthquake', stream=True, headers=headers)
 	try: # doubt google will go anywhere anytime soon
 		page.raise_for_status()
 		page = bs4.BeautifulSoup(page.text, "lxml")
-		page = page.select('.esc-lead-article-title')
-		
-		alerts = ""
+		# extract google g-card (class names/selectors may change later)
+		alert_head = page.select('._xYj')[0]
+		alert_map = page.select('.pa-eq-map-div')[0]
+		# reformat and additional attributes to map image
+		alert_map.find('img')['data-bsrc'] = "https://google.com" + alert_map.find('img')['data-bsrc']
+		alert_map.find('img')['src'] = alert_map.find('img')['data-bsrc'] + "?scale=1&h=192&w=550"
+		alert_map.find('img')['height'] = "192"
+		alert_map.find('img')['width'] = "550"
+		alert_map.find('img')['style'] = ""
 
-		for article in page:
-			if any(key in str(article) for key in KEYWORDS):
-				alerts += str(article)
+		full_html_notification = styles + '<div class="container">' + str(alert_head) + str(alert_map) + '</div>'
 
-		if len(alerts) > 0:		
-			send_alert(alerts)
+		page = requests.get('https://news.google.co.jp/news')
+		try: 
+			page.raise_for_status()
+			page = bs4.BeautifulSoup(page.text, "lxml")
+			page = page.select('.esc-lead-article-title')
+			
+			alerts = ""
+
+			for article in page:
+				if any(key in str(article) for key in KEYWORDS):
+					alerts += str(article)
+
+			full_html_notification = full_html_notification + "<br><br><hr>トップニュース<hr>" + alerts + '<hr><footer>Dynamically generated ' + time.strftime("%m/%d/%Y %H:%M:%S") + '</footer>'
+			# only send if big earthquake occurred recently
+			if len(alert_head) > 0:		
+				send_alert(full_html_notification)
+
+		except Exception as ex:
+			print('Script failed on second link: %s' % (ex))
 
 	except Exception as ex:
-		print('Script failed: %s' % (ex))
+		print('Script failed on first link: %s' % (ex))
