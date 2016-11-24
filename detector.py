@@ -11,7 +11,7 @@
 
 def send_alert(msg_body):
 
-   RECIPIENTS = ['email@domain.com']
+   RECIPIENTS = ['example@domain.com']
    BODY = msg_body
    
    message = MIMEMultipart('alternative')
@@ -35,7 +35,6 @@ if __name__ == "__main__":
 
 	KEYWORDS = ["震災","地震","津波","震度"] # Earthquake disaster, earthquake, tsunami, seismic activity
 
-	styles = "<style>body,html{font-size:small;font-family: 'Noto Sans', 'Noto Sans CJK JP', sans-serif;width:550px;}.container{border-radius:2px;box-shadow:0px 1px 4px 0px rgba(0,0,0,0.2)}._xYj{background:#f44336;padding:18px 24px 18px 24px}._fWj{color:#fff;font-size:24px;line-height:32px}._K3j{color:rgba(255,255,255,.7);font-size:15px;line-height:24px}</style>"
 	headers = {'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8', 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36'}
 	page = requests.get('https://www.google.com/search?q=japan+earthquake', stream=True, headers=headers)
 	try: # doubt google will go anywhere anytime soon
@@ -50,8 +49,11 @@ if __name__ == "__main__":
 		alert_map.find('img')['height'] = "192"
 		alert_map.find('img')['width'] = "550"
 		alert_map.find('img')['style'] = ""
+		# use inline styles because gmail blocks all external (referenced) assets - stylesheets, images, scripts, etc. This is to protect the privacy of the recipient.
+		alert_head.find("div", class_="_fWj")['style'] = 'color:#fff;font-size:24px;line-height:32px'
+		alert_head.find("div", class_="_K3j")['style'] = 'color:rgba(255,255,255,.7);font-size:15px;line-height:24px'
 
-		full_html_notification = styles + '<div class="container">' + str(alert_head) + str(alert_map) + '</div>'
+		full_html_notification = '<div class="container" style="font-size:small;width:550px;border-radius:2px;box-shadow:0px 1px 4px 0px rgba(0,0,0,0.2)">' + '<div style="background:#f44336;padding:18px 24px 18px 24px">' + str(alert_head) + "</div>" + str(alert_map) + '</div>'
 
 		page = requests.get('https://news.google.co.jp/news')
 		try: 
@@ -68,6 +70,7 @@ if __name__ == "__main__":
 			full_html_notification = full_html_notification + "<br><br><hr>トップニュース<hr>" + alerts + '<hr><footer>Dynamically generated ' + time.strftime("%m/%d/%Y %H:%M:%S") + '</footer>'
 			# only send if big earthquake occurred recently
 			if len(alert_head) > 0:		
+				print full_html_notification
 				send_alert(full_html_notification)
 
 		except Exception as ex:
