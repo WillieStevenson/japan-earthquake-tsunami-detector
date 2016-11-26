@@ -1,5 +1,5 @@
 # japan-earthquake-tsunami-detector
-A simple web page scraper that aims to detect earthquakes and tsunamis in Japan.
+A simple web page scraper that aims to detect earthquakes in Japan and alert you when one occurs.
 
 
 ## Installation
@@ -9,6 +9,3 @@ A simple web page scraper that aims to detect earthquakes and tsunamis in Japan.
 ## Run
 
 1. Clone the repo and run `$ python detector.py` (preferably as a cron job).
-
-
-
