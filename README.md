@@ -1,5 +1,5 @@
 # japan-earthquake-tsunami-detector
-A simple web page scraper that aims to detect earthquakes in Japan and alert you when one occurs.
+A simple web page scraper that aims to detect earthquakes in Japan and alert you with location information and up-to-date news when one occurs.
 
 
 ## Installation
